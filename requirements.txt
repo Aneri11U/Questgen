@@ -16,6 +16,7 @@
 #pandas
 #sentencepiece
 #transformers
+en_core_web_sm
 git+https://github.com/boudinfl/pke.git
 git+https://github.com/devbm7/Questgen.ai.git
 nltk
