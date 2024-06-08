@@ -1,6 +1,9 @@
 import streamlit as st
 from pprint import pprint
 from Questgen import main
+from spacy.cli import download
+
+download('en_core_web_sm')
 
 st.set_page_config(
     page_title='Questgen',
