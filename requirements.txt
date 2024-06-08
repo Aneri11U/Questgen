@@ -1,0 +1,17 @@
+streamlit
+torch
+sense2vec
+strsim
+six
+networkx
+numpy
+scipy
+scikit-learn
+unicode
+future
+joblib
+pytz
+python-dateutil
+flashtext
+pandas
+sentencepiece
