@@ -16,4 +16,4 @@ flashtext
 pandas
 sentencepiece
 transformers
-pke
+git+https://github.com/boudinfl/pke.git
