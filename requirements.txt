@@ -16,3 +16,4 @@ flashtext
 pandas
 sentencepiece
 transformers
+pke
