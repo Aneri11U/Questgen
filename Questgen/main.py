@@ -56,8 +56,8 @@ from nltk.corpus import brown
 # from similarity.normalized_levenshtein import NormalizedLevenshtein
 from nltk.tokenize import sent_tokenize
 # from flashtext import KeywordProcessor
-from spacy.cli import download
-download('en_core_web_sm')
+# from spacy.cli import download
+# download('en_core_web_sm')
 
 
 def beam_search_decoding (inp_ids,attn_mask,model,tokenizer):
