@@ -1,4 +1,4 @@
-streamlit
+#streamlit
 #torch
 #sense2vec
 #strsim
@@ -19,3 +19,4 @@ streamlit
 git+https://github.com/boudinfl/pke.git
 git+https://github.com/ramsrigouthamg/Questgen.ai.git
 nltk
+streamlit
