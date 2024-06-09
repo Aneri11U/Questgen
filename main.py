@@ -1,7 +1,6 @@
 import streamlit as st
 from pprint import pprint
 from spacy.cli import download
-download('en_core_web_sm')
 from Questgen import main
 from spacy.cli import download
 
