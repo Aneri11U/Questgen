@@ -17,7 +17,6 @@ pandas
 sentencepiece
 transformers
 spacy
-#git+https://github.com/boudinfl/pke.git
-git+https://github.com/devbm7/Questgen.ai.git
+git+https://github.com/boudinfl/pke.git
+#git+https://github.com/devbm7/Questgen.ai.git
 nltk
-streamlit
