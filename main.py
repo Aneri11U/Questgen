@@ -1,5 +1,8 @@
 import streamlit as st
 from pprint import pprint
+import subprocess
+cmd = ["python", "-m", "spacy", "download", "en_core_web_sm"]
+subprocess.run(cmd)
 from spacy.cli import download
 from Questgen import main
 from spacy.cli import download
