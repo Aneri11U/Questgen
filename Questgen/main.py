@@ -3,6 +3,9 @@ import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 import time
 import torch
 from transformers import T5ForConditionalGeneration,T5Tokenizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from transformers import pipeline
 import random
 import spacy
 import zipfile
@@ -15,6 +18,7 @@ import string
 import pke
 import nltk
 import numpy 
+import yake
 from nltk import FreqDist
 nltk.download('brown', quiet=True, force=True)
 nltk.download('stopwords', quiet=True, force=True)
@@ -138,7 +142,7 @@ def tokenize_sentences(text):
     sentences = [sent_tokenize(text)]
     sentences = [y for x in sentences for y in x]
     # Remove any short sentences less than 20 letters.
-    sentences = [sentence.strip() for sentence in sentences if len(sentence) > 20]
+    sentences = [sentence.strip() for sentence in sentences if len(sentence) > 5]
     return sentences
 
 
@@ -192,30 +196,85 @@ def filter_phrases(phrase_keys,max,normalized_levenshtein ):
 
 
 def get_nouns_multipartite(text):
-    out = []
+    # out = []
 
-    extractor = pke.unsupervised.MultipartiteRank()
-    extractor.load_document(input=text, language='en')
-    pos = {'PROPN', 'NOUN'}
-    stoplist = list(string.punctuation)
-    stoplist += stopwords.words('english')
-    extractor.candidate_selection(pos=pos)
-    # 4. build the Multipartite graph and rank candidates using random walk,
-    #    alpha controls the weight adjustment mechanism, see TopicRank for
-    #    threshold/method parameters.
-    try:
-        extractor.candidate_weighting(alpha=1.1,
-                                      threshold=0.75,
-                                      method='average')
-    except:
-        return out
+    # extractor = pke.unsupervised.MultipartiteRank()
+    # extractor.load_document(input=text, language='en')
+    # pos = {'PROPN', 'NOUN'}
+    # stoplist = list(string.punctuation)
+    # stoplist += stopwords.words('english')
+    # extractor.candidate_selection(pos=pos)
+    # # 4. build the Multipartite graph and rank candidates using random walk,
+    # #    alpha controls the weight adjustment mechanism, see TopicRank for
+    # #    threshold/method parameters.
+    # try:
+    #     extractor.candidate_weighting(alpha=1.1,
+    #                                   threshold=0.75,
+    #                                   method='average')
+    # except:
+    #     return out
 
-    keyphrases = extractor.get_n_best(n=10)
+    # keyphrases = extractor.get_n_best(n=10)
 
-    for key in keyphrases:
-        out.append(key[0])
+    # for key in keyphrases:
+    #     out.append(key[0])
 
-    return out
+    # nlp = spacy.load("en_core_web_sm")
+    # labels = nlp(text)
+
+    # for i in (labels.ents):
+    #     out.append(str(i))
+    nlp = spacy.load('en_core_web_sm')
+    doc = nlp(text)
+    ner_pipeline = pipeline("ner", model="dbmdz/bert-large-cased-finetuned-conll03-english")
+    # Extract named entities using spaCy
+    spacy_entities = [ent.text for ent in doc.ents]
+    print(f"\n\nSpacy Entities: {spacy_entities}\n\n")
+    # Extract named entities using BERT-based NER
+    bert_entities = [entity['word'] for entity in ner_pipeline(text)]
+    print(f"BERT Entities: {bert_entities}\n\n")
+    # Combine both NER results and remove duplicates
+    entities = list(set(spacy_entities))
+
+    # Extract nouns and verbs using spaCy
+    nouns = [chunk.text for chunk in doc.noun_chunks]
+    verbs = [token.lemma_ for token in doc if token.pos_ == 'VERB']
+    print(f"Spacy Nouns: {nouns}\n\n")
+    print(f"Spacy Verbs: {verbs}\n\n")
+    
+    # Use YAKE for keyphrase extraction
+    yake_extractor = yake.KeywordExtractor()
+    yake_keywords = yake_extractor.extract_keywords(text)
+    yake_keywords = [kw[0] for kw in yake_keywords]
+    print(f"Yake: {yake_keywords}\n\n")
+    # Combine all keywords and remove duplicates
+    combined_keywords = list(set(entities + nouns + verbs + yake_keywords))
+    vectorizer = TfidfVectorizer()
+    tfidf_matrix = vectorizer.fit_transform(combined_keywords)
+    similarity_matrix = cosine_similarity(tfidf_matrix)
+    clusters = []
+
+    similarity_threshold = 0.45
+
+    for idx, word in enumerate(combined_keywords):
+        added_to_cluster = False
+        for cluster in clusters:
+            # Check if the word is similar to any word in the existing cluster
+            if any(similarity_matrix[idx, other_idx] > similarity_threshold for other_idx in cluster):
+                cluster.append(idx)
+                added_to_cluster = True
+                break
+        if not added_to_cluster:
+            clusters.append([idx])
+
+    # Step 4: Select representative words from each cluster
+    representative_words = [combined_keywords[cluster[0]] for cluster in clusters]
+
+    # Print the representative words
+    # print("Keywords after removing similar words: ", representative_words)
+    # return combined_keywords
+
+    return representative_words
 
 
 def get_phrases(doc):
